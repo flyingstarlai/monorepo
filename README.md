@@ -1,127 +1,304 @@
-# App Starter
+# Account Manager
 
-A modern web application starter template built with Turborepo, featuring a full-stack architecture with React, TanStack Router, and NestJS.
+A comprehensive account management system built with modern web technologies, featuring user authentication, department-based organization, and real-time dashboard analytics.
 
-## Quick Start
+## Overview
 
-Clone this repository and install dependencies:
+Account Manager is a full-stack application designed to efficiently manage user accounts across departments. It provides secure authentication, comprehensive user management capabilities, and insightful analytics through an intuitive dashboard interface.
 
-```bash
-git clone <repository-url>
-cd app-starter
-pnpm install
-pnpm dev
-```
+## Tech Stack
 
-## What's inside?
+### Backend
 
-This App Starter includes the following packages & apps:
+- **NestJS** - Progressive Node.js framework for building efficient APIs
+- **TypeORM** - Modern ORM for TypeScript and JavaScript
+- **SQL Server** - Enterprise-grade database
+- **JWT Authentication** - Secure token-based authentication
+- **Passport** - Authentication middleware for Node.js
 
-### Apps and Packages
+### Frontend
+
+- **React 19** - Modern React with latest features
+- **TanStack Router** - Type-safe routing with data loading
+- **TanStack Query** - Powerful data synchronization and server state management
+- **Tailwind CSS** - Utility-first CSS framework
+- **Radix UI** - Unstyled, accessible UI components
+- **Zod** - TypeScript-first schema validation
+
+### Development Tools
+
+- **Turborepo** - High-performance build system for monorepos
+- **TypeScript** - Type-safe JavaScript
+- **ESLint & Prettier** - Code quality and formatting
+- **Vitest** - Fast unit testing framework
+
+## Features
+
+### 🔐 Authentication & Security
+
+- JWT-based authentication system
+- Secure password hashing with bcrypt
+- Role-based access control
+- Session management with automatic token refresh
+
+### 👥 User Management
+
+- Complete CRUD operations for user accounts
+- Department-based organization
+- User status management (active/inactive)
+- Bulk user operations
+- User search and filtering
+
+### 📊 Dashboard Analytics
+
+- Real-time user statistics
+- Department-wise user distribution
+- User growth analytics
+- Recent activity tracking
+- Interactive charts and visualizations
+
+### 🎨 Modern UI/UX
+
+- Responsive design for all devices
+- Dark/light theme support
+- Accessible components following WCAG standards
+- Smooth animations and transitions
+- Loading states and error handling
+
+## Project Structure
 
 ```shell
 .
-├── apps
-│   ├── api                       # NestJS backend API (https://nestjs.com).
-│   └── web                       # React frontend with TanStack Router (https://tanstack.com).
-└── packages
-    ├── @repo/api                 # Shared API types and utilities.
-    ├── @repo/eslint-config       # ESLint configurations (includes Prettier)
-    ├── @repo/jest-config         # Jest configurations
-    ├── @repo/typescript-config   # TypeScript configurations used throughout the monorepo
-    └── @repo/ui                  # Shareable React component library.
+├── apps/
+│   ├── api/                       # NestJS backend API
+│   │   ├── src/
+│   │   │   ├── auth/             # Authentication module
+│   │   │   ├── users/            # User management
+│   │   │   ├── dashboard/        # Dashboard analytics
+│   │   │   ├── database/         # Database configuration
+│   │   │   └── migrations/       # Database migrations
+│   │   └── test/                 # E2E tests
+│   └── web/                      # React frontend
+│       ├── src/
+│       │   ├── components/       # Reusable UI components
+│       │   ├── features/         # Feature-based modules
+│       │   ├── hooks/           # Custom React hooks
+│       │   ├── lib/             # Utility libraries
+│       │   └── routes/          # Route definitions
+└── packages/
+    ├── api/                     # Shared API types
+    ├── eslint-config/          # ESLint configurations
+    ├── jest-config/            # Jest configurations
+    ├── typescript-config/      # TypeScript configurations
+    └── ui/                     # Shared UI components
 ```
 
-Each package and application are mostly written in [TypeScript](https://www.typescriptlang.org/).
+## Quick Start
 
-### Utilities
+### Prerequisites
 
-This `Turborepo` has some additional tools already set for you:
+- Node.js 18+
+- pnpm package manager
+- SQL Server database
 
-- [TypeScript](https://www.typescriptlang.org/) for static type-safety
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-- [Jest](https://prettier.io) & [Playwright](https://playwright.dev/) for testing
+### Installation
 
-### Commands
+1. **Clone the repository**
 
-This `Turborepo` already configured useful commands for all your apps and packages.
+   ```bash
+   git clone <repository-url>
+   cd account-manager
+   ```
 
-#### Build
+2. **Install dependencies**
+
+   ```bash
+   pnpm install
+   ```
+
+3. **Environment setup**
+
+   ```bash
+   cp apps/api/.env.example apps/api/.env
+   # Configure your database connection and JWT secrets
+   ```
+
+4. **Database setup**
+
+   ```bash
+   # Run migrations
+   cd apps/api
+   pnpm migration:run
+
+   # Seed initial data (optional)
+   pnpm seed
+   ```
+
+5. **Start development servers**
+
+   ```bash
+   # Start both API and web applications
+   pnpm dev
+
+   # Or start individually:
+   # API: cd apps/api && pnpm dev
+   # Web: cd apps/web && pnpm dev
+   ```
+
+The application will be available at:
+
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:3000
+
+## Available Scripts
+
+### Development
 
 ```bash
-# Will build all the app & packages with the supported `build` script.
-pnpm run build
-
-# ℹ️ If you plan to only build apps individually,
-# Please make sure you've built the packages first.
+pnpm dev              # Start all applications in development mode
+pnpm dev:api          # Start only the API server
+pnpm dev:web          # Start only the web application
 ```
 
-#### Develop
+### Build
 
 ```bash
-# Will run the development server for all the app & packages with the supported `dev` script.
-pnpm run dev
+pnpm build            # Build all applications and packages
+pnpm build:api        # Build only the API
+pnpm build:web        # Build only the web application
 ```
 
-#### test
+### Testing
 
 ```bash
-# Will launch a test suites for all the app & packages with the supported `test` script.
-pnpm run test
-
-# You can launch e2e testes with `test:e2e`
-pnpm run test:e2e
-
-# See `@repo/jest-config` to customize the behavior.
+pnpm test             # Run all test suites
+pnpm test:unit        # Run unit tests
+pnpm test:e2e         # Run end-to-end tests
+pnpm test:watch       # Run tests in watch mode
 ```
 
-#### Lint
+### Code Quality
 
 ```bash
-# Will lint all the app & packages with the supported `lint` script.
-# See `@repo/eslint-config` to customize the behavior.
-pnpm run lint
+pnpm lint             # Lint all files
+pnpm lint:fix         # Fix linting issues
+pnpm format           # Format code with Prettier
 ```
 
-#### Format
+### Database Operations
 
 ```bash
-# Will format all the supported `.ts,.js,json,.tsx,.jsx` files.
-# See `@repo/eslint-config/prettier-base.js` to customize the behavior.
-pnpm format
+# From apps/api directory
+pnpm migration:generate <name>    # Create new migration
+pnpm migration:run               # Run pending migrations
+pnpm migration:revert            # Revert last migration
+pnpm seed                        # Seed database with initial data
+pnpm seed:clear                  # Clear all seed data
 ```
 
-### Remote Caching
+## API Documentation
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+### Authentication Endpoints
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+- `POST /auth/login` - User login
+- `POST /auth/register` - User registration
+- `POST /auth/change-password` - Change password
+- `GET /auth/profile` - Get current user profile
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+### User Management Endpoints
+
+- `GET /users` - List users with pagination and filtering
+- `GET /users/:id` - Get user details
+- `POST /users` - Create new user
+- `PUT /users/:id` - Update user
+- `DELETE /users/:id` - Delete user
+
+### Dashboard Endpoints
+
+- `GET /dashboard/stats` - Get dashboard statistics
+- `GET /dashboard/activity` - Get recent activity
+
+## Configuration
+
+### Environment Variables
+
+**API (.env)**
+
+```env
+# Database
+DB_HOST=localhost
+DB_PORT=1433
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+DB_DATABASE=account_manager
+
+# JWT
+JWT_SECRET=your_jwt_secret_key
+JWT_EXPIRES_IN=24h
+
+# Server
+PORT=3000
+NODE_ENV=development
+```
+
+**Web (.env)**
+
+```env
+VITE_API_URL=http://localhost:3000
+VITE_APP_NAME=Account Manager
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## Deployment
+
+### Production Build
 
 ```bash
-npx turbo login
+# Build all applications
+pnpm build
+
+# Start production servers
+pnpm start
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+### Docker Deployment
 
 ```bash
-npx turbo link
+# Build Docker images
+docker-compose build
+
+# Start services
+docker-compose up -d
 ```
 
-## Useful Links
+## Security Considerations
 
-This example take some inspiration the [with-nextjs](https://github.com/vercel/turborepo/tree/main/examples/with-nextjs) `Turbo` example and [01-cats-app](https://github.com/nestjs/nest/tree/master/sample/01-cats-app) `NestJs` sample.
+- All passwords are hashed using bcrypt
+- JWT tokens have configurable expiration
+- Input validation on all endpoints
+- SQL injection prevention via TypeORM
+- CORS configuration for API security
+- Environment-based configuration management
 
-Learn more about the power of Turborepo:
+## Performance Optimizations
 
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+- Database query optimization
+- React component memoization
+- API response caching
+- Bundle splitting and lazy loading
+- Image optimization and CDN support
+
+## License
+
+This project is licensed under the UNLICENSED license - see the LICENSE file for details.
+
+## Support
+
+For support and questions, please open an issue in the repository or contact the development team.
