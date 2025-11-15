@@ -7,10 +7,12 @@ import type { User } from '../types/user.types';
 import {
   getUserInitials,
   getRoleVariant,
+  getRoleColor,
   getStatusVariant,
   formatLastLogin,
   formatDate,
 } from '../utils/user-transformers';
+import { useAuth } from '@/features/auth/hooks/use-auth';
 
 export interface UserDetailProps {
   user: User;
@@ -19,12 +21,30 @@ export interface UserDetailProps {
   isLoading?: boolean;
 }
 
+// Helper function to check if current user can delete target user
+const canDeleteUser = (currentUser: User | null, targetUser: User): boolean => {
+  if (!currentUser) return false;
+
+  // Cannot delete yourself
+  if (currentUser.id === targetUser.id) return false;
+
+  // Admin can delete anyone
+  if (currentUser.role === 'admin') return true;
+
+  // Manager can only delete regular users
+  if (currentUser.role === 'manager' && targetUser.role === 'user') return true;
+
+  // Regular users cannot delete anyone
+  return false;
+};
+
 export function UserDetail({
   user,
   onEdit,
   onDelete,
   isLoading = false,
 }: UserDetailProps) {
+  const { user: currentUser } = useAuth();
   const initials = getUserInitials(user);
 
   return (
@@ -55,7 +75,7 @@ export function UserDetail({
               <Edit className="h-4 w-4" />
             </Button>
           )}
-          {onDelete && (
+          {onDelete && canDeleteUser(currentUser, user) && (
             <Button
               variant="outline"
               size="sm"
@@ -86,12 +106,23 @@ export function UserDetail({
             {/* Basic Info */}
             <div className="flex-1">
               <h1 className="text-2xl font-bold text-slate-900 mb-2">
-                {user.fullName}
+                {user.fullName || 'Unknown User'}
               </h1>
-              <p className="text-slate-600 mb-4">@{user.username}</p>
+              <p className="text-slate-600 mb-4">
+                @{user.username || 'unknown'}
+              </p>
 
               <div className="flex items-center space-x-3">
-                <Badge variant={getRoleVariant(user.role)}>{user.role}</Badge>
+                <Badge
+                  variant={getRoleVariant(user.role)}
+                  style={{
+                    backgroundColor: getRoleColor(user.role),
+                    color: 'white',
+                    borderColor: getRoleColor(user.role),
+                  }}
+                >
+                  {user.role || 'user'}
+                </Badge>
                 <Badge variant={getStatusVariant(user.isActive)}>
                   {user.isActive ? 'Active' : 'Inactive'}
                 </Badge>
@@ -116,7 +147,7 @@ export function UserDetail({
                 Full Name
               </label>
               <p className="text-lg font-medium text-slate-900">
-                {user.fullName}
+                {user.fullName || 'Not specified'}
               </p>
             </div>
             <div>
@@ -124,7 +155,7 @@ export function UserDetail({
                 Username
               </label>
               <p className="text-lg font-medium text-slate-900">
-                {user.username}
+                {user.username || 'Not specified'}
               </p>
             </div>
             <div>
@@ -153,7 +184,7 @@ export function UserDetail({
                 Department
               </label>
               <p className="text-lg font-medium text-slate-900">
-                {user.deptName}
+                {user.deptName || 'Not specified'}
               </p>
             </div>
             <div>
@@ -167,7 +198,16 @@ export function UserDetail({
             <div>
               <label className="text-sm font-medium text-slate-700">Role</label>
               <div className="mt-1">
-                <Badge variant={getRoleVariant(user.role)}>{user.role}</Badge>
+                <Badge
+                  variant={getRoleVariant(user.role)}
+                  style={{
+                    backgroundColor: getRoleColor(user.role),
+                    color: 'white',
+                    borderColor: getRoleColor(user.role),
+                  }}
+                >
+                  {user.role}
+                </Badge>
               </div>
             </div>
           </CardContent>

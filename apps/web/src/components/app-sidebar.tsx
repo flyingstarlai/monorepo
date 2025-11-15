@@ -1,5 +1,6 @@
 import { Link, useLocation } from '@tanstack/react-router';
 import { useAuthContext } from '@/features/auth/hooks/use-auth-context';
+import { useLogout } from '@/features/auth/hooks/use-auth';
 import { NavUser } from '@/components/nav-user';
 import {
   Sidebar,
@@ -18,6 +19,11 @@ import { LayoutDashboard, Users, Settings, LogOut } from 'lucide-react';
 export function AppSidebar() {
   const { user } = useAuthContext();
   const location = useLocation();
+  const logoutMutation = useLogout();
+
+  const handleLogout = async () => {
+    await logoutMutation.mutateAsync();
+  };
 
   const navigation = [
     {
@@ -26,7 +32,7 @@ export function AppSidebar() {
       icon: LayoutDashboard,
       isActive: location.pathname === '/dashboard',
     },
-    ...(user?.role === 'admin'
+    ...(user?.role && ['admin', 'manager'].includes(user.role)
       ? [
           {
             title: 'User Management',
@@ -91,10 +97,11 @@ export function AppSidebar() {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton
-                onClick={() => (window.location.href = '/login')}
+                onClick={handleLogout}
+                disabled={logoutMutation.isPending}
               >
                 <LogOut />
-                Log out
+                {logoutMutation.isPending ? 'Logging out...' : 'Log out'}
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

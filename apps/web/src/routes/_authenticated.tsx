@@ -4,7 +4,7 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { DashboardHeader } from '@/components/dashboard-header';
 
 export const Route = createFileRoute('/_authenticated')({
-  beforeLoad: async ({ context }) => {
+  beforeLoad: async ({ context, location }) => {
     // Wait for global auth initialization promise
     await context.authInit;
 
@@ -14,7 +14,7 @@ export const Route = createFileRoute('/_authenticated')({
         to: '/login',
         search: {
           // Save current location for redirect after login
-          redirect: window.location.pathname + window.location.search,
+          redirect: location.pathname + location.search,
         },
       });
     }

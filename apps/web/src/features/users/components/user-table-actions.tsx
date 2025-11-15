@@ -22,11 +22,11 @@ export function useUserTableActions({ onRefresh }: UserTableActionsProps = {}) {
   const toggleStatusMutation = useToggleUserStatus();
 
   const handleView = (user: User) => {
-    navigate({ to: `/users/${user.id}` });
+    navigate({ to: '/users/$id', params: { id: user.id } });
   };
 
   const handleEdit = (user: User) => {
-    navigate({ to: `/users/${user.id}/edit` });
+    navigate({ to: '/users/$id/edit', params: { id: user.id } });
   };
 
   const handleDelete = (user: User) => {
@@ -47,9 +47,11 @@ export function useUserTableActions({ onRefresh }: UserTableActionsProps = {}) {
 
   const confirmDelete = async (user: User) => {
     try {
+      console.log('Attempting to delete user:', user.id);
       await deleteUserMutation.mutateAsync(user.id);
+      console.log('Delete successful, closing dialog');
       setDeleteDialog({ user: null, isOpen: false });
-      onRefresh?.();
+      // No need to call onRefresh since useDeleteUser already invalidates queries
     } catch (error) {
       console.error('Delete user failed:', error);
     }

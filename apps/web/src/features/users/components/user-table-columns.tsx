@@ -15,9 +15,11 @@ import {
   getUserInitials,
   getUserDisplayName,
   getRoleVariant,
+  getRoleColor,
   getStatusVariant,
   formatLastLogin,
 } from '../utils/user-transformers';
+import { useAuth } from '@/features/auth/hooks/use-auth';
 
 interface UserTableColumnsProps {
   onView?: (user: User) => void;
@@ -26,12 +28,30 @@ interface UserTableColumnsProps {
   onToggleStatus?: (user: User, isActive: boolean) => void;
 }
 
+// Helper function to check if current user can delete target user
+const canDeleteUser = (currentUser: User | null, targetUser: User): boolean => {
+  if (!currentUser) return false;
+
+  // Cannot delete yourself
+  if (currentUser.id === targetUser.id) return false;
+
+  // Admin can delete anyone
+  if (currentUser.role === 'admin') return true;
+
+  // Manager can only delete regular users
+  if (currentUser.role === 'manager' && targetUser.role === 'user') return true;
+
+  // Regular users cannot delete anyone
+  return false;
+};
+
 export function createUserTableColumns({
   onView,
   onEdit,
   onDelete,
   onToggleStatus,
 }: UserTableColumnsProps): ColumnDef<User>[] {
+  const { user: currentUser } = useAuth();
   return [
     {
       accessorKey: 'username',
@@ -72,7 +92,18 @@ export function createUserTableColumns({
       header: 'Role',
       cell: ({ row }) => {
         const user = row.original;
-        return <Badge variant={getRoleVariant(user.role)}>{user.role}</Badge>;
+        return (
+          <Badge
+            variant={getRoleVariant(user.role)}
+            style={{
+              backgroundColor: getRoleColor(user.role),
+              color: 'white',
+              borderColor: getRoleColor(user.role),
+            }}
+          >
+            {user.role}
+          </Badge>
+        );
       },
     },
     {
@@ -146,7 +177,7 @@ export function createUserTableColumns({
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
-              {onDelete && (
+              {onDelete && canDeleteUser(currentUser, user) && (
                 <DropdownMenuItem
                   onClick={() => onDelete(user)}
                   className="text-red-600 focus:text-red-600"

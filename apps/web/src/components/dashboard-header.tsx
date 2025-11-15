@@ -1,6 +1,7 @@
 import { useAuthContext } from '@/features/auth/hooks/use-auth-context';
 import { Badge } from '@/components/ui/badge';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { RoleService } from '@/lib/role.service';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,7 +10,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { useLocation } from '@tanstack/react-router';
+import { useLocation, Link } from '@tanstack/react-router';
 
 export function DashboardHeader() {
   const { user } = useAuthContext();
@@ -64,7 +65,10 @@ export function DashboardHeader() {
               href: location.pathname,
               isCurrentPage: true,
             });
-          } else if (filteredSegments[2] === 'edit') {
+          } else if (
+            filteredSegments[1] === '$id' &&
+            filteredSegments[2] === 'edit'
+          ) {
             breadcrumbs.push({
               label: 'Edit User',
               href: location.pathname,
@@ -95,9 +99,11 @@ export function DashboardHeader() {
                   {crumb.isCurrentPage ? (
                     <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
                   ) : (
-                    <BreadcrumbLink href={crumb.href}>
-                      {crumb.label}
-                    </BreadcrumbLink>
+                    <Link to={crumb.href}>
+                      <BreadcrumbLink asChild>
+                        <span>{crumb.label}</span>
+                      </BreadcrumbLink>
+                    </Link>
                   )}
                 </BreadcrumbItem>
               </div>
@@ -108,16 +114,25 @@ export function DashboardHeader() {
 
       <div className="ml-auto flex items-center gap-2 px-4">
         {/* User Info */}
-        <div className="flex items-center space-x-2 pl-4 border-l border-slate-200">
+        <div className="flex items-center gap-2 pl-4 border-l border-slate-200">
           <div className="text-right">
             <p className="text-sm font-medium text-slate-900">
               {user?.fullName || user?.username}
             </p>
             <Badge
-              variant={user?.isActive ? 'default' : 'secondary'}
+              variant="outline"
               className="text-xs"
+              style={{
+                backgroundColor: user?.isActive
+                  ? RoleService.getRoleColor(user?.role)
+                  : undefined,
+                color: user?.isActive ? 'white' : undefined,
+                borderColor: user?.isActive
+                  ? RoleService.getRoleColor(user?.role)
+                  : undefined,
+              }}
             >
-              {user?.role}
+              {user?.role || 'Unknown'}
             </Badge>
           </div>
         </div>

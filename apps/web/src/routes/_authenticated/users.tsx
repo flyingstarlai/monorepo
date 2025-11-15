@@ -1,19 +1,45 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router';
+import {
+  createFileRoute,
+  Outlet,
+  redirect,
+  Link,
+} from '@tanstack/react-router';
+import { useAuthContext } from '@/features/auth/hooks/use-auth-context';
+import { useLocation } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
-import { Link } from '@tanstack/react-router';
-import { Plus } from 'lucide-react';
-import { useRouterState } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_authenticated/users')({
+  beforeLoad: ({ context, location }) => {
+    if (!context.auth.hasAnyRole(['admin', 'manager'])) {
+      throw redirect({
+        to: '/unauthorized',
+        search: {
+          redirect: location.pathname + location.search,
+          reason: 'insufficient_role',
+        },
+      });
+    }
+  },
   component: UsersLayout,
 });
 
 function UsersLayout() {
-  const routerState = useRouterState();
-  const currentPath = routerState.location.pathname;
+  const { user } = useAuthContext();
+  const location = useLocation();
+  const currentPath = location.pathname;
 
   // Check if we're on the main users list page
   const isUsersIndex = currentPath === '/users' || currentPath === '/users/';
+
+  // Determine create user link based on role
+  const getCreateUserLink = () => {
+    if (user?.role === 'admin') {
+      return '/users/create';
+    } else if (user?.role === 'manager') {
+      return '/users/create';
+    }
+    return undefined;
+  };
 
   return (
     <div className="space-y-6">
@@ -22,13 +48,12 @@ function UsersLayout() {
         <div>
           <h1 className="text-3xl font-bold text-slate-900">User Management</h1>
           <p className="text-slate-600 mt-2">
-            Manage user accounts, roles, and permissions in the system.
+            Manage user accounts, roles, and permissions in system.
           </p>
         </div>
-        {isUsersIndex && (
-          <Link to="/users/create">
+        {isUsersIndex && getCreateUserLink() && (
+          <Link to={getCreateUserLink()}>
             <Button className="flex items-center space-x-2">
-              <Plus className="h-4 w-4" />
               <span>Create User</span>
             </Button>
           </Link>

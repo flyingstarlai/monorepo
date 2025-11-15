@@ -28,15 +28,16 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { LoadingOverlay } from '@/components/ui/loading';
 
 import type { User, CreateUserData, UpdateUserData } from '../types/user.types';
+import { RoleService } from '@/lib/role.service';
 
 // Zod schema for validation
 const userFormSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
-  password: z.string().min(3, 'Password must be at least 3 characters'),
+  password: z.string().optional(),
   fullName: z.string().min(2, 'Full name must be at least 2 characters'),
   deptNo: z.string().min(1, 'Department code is required'),
   deptName: z.string().min(2, 'Department name must be at least 2 characters'),
-  role: z.enum(['admin', 'regular']),
+  role: z.enum(['admin', 'manager', 'user']),
   isActive: z.boolean(),
 });
 
@@ -46,6 +47,7 @@ export interface UserFormProps {
   isLoading?: boolean;
   title?: string;
   description?: string;
+  currentUserRole?: User['role'];
 }
 
 export function UserForm({
@@ -54,8 +56,15 @@ export function UserForm({
   isLoading = false,
   title,
   description,
+  currentUserRole,
 }: UserFormProps) {
   const isEdit = !!user;
+
+  // Get available role options based on current user's role
+  const availableRoles =
+    RoleService.getAvailableRolesForCreation(currentUserRole);
+  const canSelectRole = availableRoles.length > 0;
+  const canEditRole = currentUserRole === 'admin';
 
   const form = useForm({
     defaultValues: {
@@ -64,13 +73,13 @@ export function UserForm({
       fullName: user?.fullName || '',
       deptNo: user?.deptNo || '',
       deptName: user?.deptName || '',
-      role: user?.role || 'regular',
+      role: user?.role || (availableRoles[0] as User['role']) || 'user',
       isActive: user?.isActive ?? true,
     },
     validators: {
-      onSubmit: userFormSchema,
-      onChange: userFormSchema,
-      onBlur: userFormSchema,
+      onSubmit: userFormSchema as any,
+      onChange: userFormSchema as any,
+      onBlur: userFormSchema as any,
     },
     onSubmit: async ({ value }) => {
       const submitData = { ...value };
@@ -252,37 +261,65 @@ export function UserForm({
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <form.Field
-                  name="role"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Role</FieldLabel>
-                        <Select
-                          value={field.state.value}
-                          onValueChange={(value) =>
-                            field.handleChange(value as 'admin' | 'regular')
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select role" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="regular">Regular</SelectItem>
-                            <SelectItem value="admin">Admin</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
+              {canSelectRole && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <form.Field
+                    name="role"
+                    children={(field) => {
+                      const isInvalid =
+                        field.state.meta.isTouched && !field.state.meta.isValid;
+                      return (
+                        <Field data-invalid={isInvalid}>
+                          <FieldLabel htmlFor={field.name}>Role</FieldLabel>
+                          <Select
+                            value={field.state.value}
+                            onValueChange={(value) =>
+                              field.handleChange(
+                                value as 'admin' | 'manager' | 'user',
+                              )
+                            }
+                            disabled={isEdit && !canEditRole} // Only admins can change roles
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {availableRoles.includes('user') && (
+                                <SelectItem value="user">User</SelectItem>
+                              )}
+                              {availableRoles.includes('manager') && (
+                                <SelectItem value="manager">Manager</SelectItem>
+                              )}
+                              {availableRoles.includes('admin') && (
+                                <SelectItem value="admin">Admin</SelectItem>
+                              )}
+                            </SelectContent>
+                          </Select>
+                          {isInvalid && (
+                            <FieldError errors={field.state.meta.errors} />
+                          )}
+                          {!canEditRole && isEdit && (
+                            <FieldDescription>
+                              Only administrators can change user roles
+                            </FieldDescription>
+                          )}
+                        </Field>
+                      );
+                    }}
+                  />
+                </div>
+              )}
 
+              {!canSelectRole && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                  <p className="text-sm text-yellow-800">
+                    Your role doesn't have permission to create users with
+                    specific roles.
+                  </p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <form.Field
                   name="isActive"
                   children={(field) => {

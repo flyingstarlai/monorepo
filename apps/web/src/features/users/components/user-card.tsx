@@ -7,9 +7,11 @@ import {
   getUserInitials,
   getUserDisplayName,
   getRoleVariant,
+  getRoleColor,
   getStatusVariant,
   formatLastLogin,
 } from '../utils/user-transformers';
+import { useAuth } from '@/features/auth/hooks/use-auth';
 
 export interface UserCardProps {
   user: User;
@@ -17,7 +19,25 @@ export interface UserCardProps {
   onDelete?: (user: User) => void;
   onView?: (user: User) => void;
   showActions?: boolean;
+  isLoading?: boolean;
 }
+
+// Helper function to check if current user can delete target user
+const canDeleteUser = (currentUser: User | null, targetUser: User): boolean => {
+  if (!currentUser) return false;
+
+  // Cannot delete yourself
+  if (currentUser.id === targetUser.id) return false;
+
+  // Admin can delete anyone
+  if (currentUser.role === 'admin') return true;
+
+  // Manager can only delete regular users
+  if (currentUser.role === 'manager' && targetUser.role === 'user') return true;
+
+  // Regular users cannot delete anyone
+  return false;
+};
 
 export function UserCard({
   user,
@@ -25,7 +45,9 @@ export function UserCard({
   onDelete,
   onView,
   showActions = true,
+  isLoading = false,
 }: UserCardProps) {
+  const { user: currentUser } = useAuth();
   const displayName = getUserDisplayName(user);
   const initials = getUserInitials(user);
 
@@ -49,7 +71,16 @@ export function UserCard({
                 <span className="text-sm text-slate-500">
                   {user.deptName} ({user.deptNo})
                 </span>
-                <Badge variant={getRoleVariant(user.role)}>{user.role}</Badge>
+                <Badge
+                  variant={getRoleVariant(user.role)}
+                  style={{
+                    backgroundColor: getRoleColor(user.role),
+                    color: 'white',
+                    borderColor: getRoleColor(user.role),
+                  }}
+                >
+                  {user.role}
+                </Badge>
                 <Badge variant={getStatusVariant(user.isActive)}>
                   {user.isActive ? 'Active' : 'Inactive'}
                 </Badge>
@@ -83,12 +114,13 @@ export function UserCard({
                   <Edit className="h-4 w-4" />
                 </Button>
               )}
-              {onDelete && (
+              {onDelete && canDeleteUser(currentUser, user) && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => onDelete(user)}
                   className="text-red-600 hover:text-red-700"
+                  disabled={isLoading}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
