@@ -19,7 +19,7 @@ export class CreateUserDto {
 
   @IsOptional()
   @IsString()
-  role?: string;
+  role?: 'admin' | 'manager' | 'user';
 
   @IsOptional()
   @IsBoolean()

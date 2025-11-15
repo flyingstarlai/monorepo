@@ -22,6 +22,9 @@ export class AuthService {
   }
 
   async login(user: User) {
+    // Update lastLoginAt timestamp
+    const loginResult = await this.usersService.login(user);
+
     const payload = {
       sub: user.id,
       username: user.username,
@@ -42,6 +45,7 @@ export class AuthService {
         avatar: null,
         isActive: user.isActive,
         createdAt: user.createdAt,
+        lastLoginAt: loginResult.user.lastLoginAt,
       },
     };
   }
@@ -117,7 +121,7 @@ export class AuthService {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
-      const user = await this.usersService.findById(payload.sub);
+      const user = await this.usersService.findById(payload.sub as string);
       if (!user || !user.isActive) {
         throw new UnauthorizedException('User not found or inactive');
       }

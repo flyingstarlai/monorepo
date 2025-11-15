@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Edit, X, Check } from 'lucide-react';
 import { LoadingOverlay } from '@/components/ui/loading';
 import { toast } from 'sonner';
+import { RoleService } from '@/lib/role.service';
 
 export function UserProfile() {
   const { user, isLoading } = useAuth();
@@ -183,15 +184,22 @@ export function UserProfile() {
             <label className="text-sm font-medium text-slate-700 block mb-2">
               Role
             </label>
-            <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-              {user.role}
+            <Badge
+              variant="outline"
+              style={{
+                backgroundColor: RoleService.getRoleColor(user.role),
+                color: 'white',
+                borderColor: RoleService.getRoleColor(user.role),
+              }}
+            >
+              {RoleService.getRoleDisplayName(user.role)}
             </Badge>
           </div>
           <div>
             <label className="text-sm font-medium text-slate-700 block mb-2">
               Status
             </label>
-            <Badge variant={user.isActive ? 'default' : 'destructive'}>
+            <Badge variant={user.isActive ? 'success' : 'destructive'}>
               {user.isActive ? 'Active' : 'Inactive'}
             </Badge>
           </div>

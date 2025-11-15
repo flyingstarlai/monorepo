@@ -31,8 +31,8 @@ export class UpdateUserDto {
   deptName?: string;
 
   @IsOptional()
-  @IsEnum(['admin', 'regular'])
-  role?: 'admin' | 'regular';
+  @IsEnum(['admin', 'manager', 'user'])
+  role?: 'admin' | 'manager' | 'user';
 
   @IsOptional()
   @IsBoolean()

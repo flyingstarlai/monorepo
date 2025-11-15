@@ -74,7 +74,15 @@ export const useDeleteUser = () => {
       await api.delete(`/users/${id}`);
     },
     onSuccess: () => {
+      // Remove deleted user from cache immediately for better UX
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      // Also show success message
+      console.log('User deleted successfully');
+    },
+    onError: (error: any) => {
+      console.error('Delete user error:', error);
+      console.error('Error response:', error?.response?.data);
+      console.error('Error status:', error?.response?.status);
     },
   });
 };

@@ -17,8 +17,8 @@ export class User {
   @Column({ type: 'nvarchar', length: 100, name: 'password' })
   password: string;
 
-  @Column({ type: 'nvarchar', length: 20, default: "'regular'", name: 'role' })
-  role: string;
+  @Column({ type: 'nvarchar', length: 20, default: "'user'", name: 'role' })
+  role: 'admin' | 'manager' | 'user';
 
   @Column({ type: 'nvarchar', length: 100, name: 'full_name' })
   fullName: string;

@@ -14,13 +14,23 @@ const users = [
     isActive: true,
   },
   {
+    id: 'manager-001',
+    username: 'manager',
+    password: 'manager', // Will be hashed below
+    fullName: 'Manager User',
+    deptNo: 'MGR001',
+    deptName: 'Management',
+    role: 'manager',
+    isActive: true,
+  },
+  {
     id: 'user-001',
     username: 'user',
     password: 'user', // Will be hashed below
     fullName: 'Regular User',
     deptNo: 'USR001',
     deptName: 'General Operations',
-    role: 'regular',
+    role: 'user',
     isActive: true,
   },
 ];
@@ -50,28 +60,79 @@ export const seedUsers = async (dataSource: DataSource) => {
     const existingAdmin = await userRepository.findOne({
       where: { username: 'admin' },
     });
+    const existingManager = await userRepository.findOne({
+      where: { username: 'manager' },
+    });
     const existingUser = await userRepository.findOne({
       where: { username: 'user' },
     });
 
     if (!existingAdmin) {
-      const adminUser = userRepository.create(processedUsers[0]);
+      const adminUser = userRepository.create(processedUsers[0] as any);
       await userRepository.save(adminUser);
       console.log(
         `✅ Admin user created: admin/nimda (${shouldHashPassword ? 'hashed' : 'plain text'})`,
       );
+    }
+
+    if (!existingManager) {
+      const managerUser = userRepository.create(processedUsers[1] as any);
+      await userRepository.save(managerUser);
+      console.log(
+        `✅ Manager user created: manager/manager (${shouldHashPassword ? 'hashed' : 'plain text'})`,
+      );
     } else {
-      console.log('ℹ️ Admin user already exists');
+      // Update existing manager password if needed
+      if (shouldHashPassword) {
+        await userRepository.update(existingManager.id, {
+          password: processedUsers[1].password,
+        });
+        console.log('🔄 Manager password updated to hashed');
+      }
     }
 
     if (!existingUser) {
-      const regularUser = userRepository.create(processedUsers[1]);
+      const regularUser = userRepository.create(processedUsers[2] as any);
       await userRepository.save(regularUser);
       console.log(
         `✅ Regular user created: user/user (${shouldHashPassword ? 'hashed' : 'plain text'})`,
       );
     } else {
-      console.log('ℹ️ Regular user already exists');
+      // Update existing user password if needed
+      if (shouldHashPassword) {
+        await userRepository.update(existingUser.id, {
+          password: processedUsers[2].password,
+        });
+        console.log('🔄 Regular user password updated to hashed');
+      }
+    }
+
+    if (!existingUser) {
+      const regularUser = userRepository.create(processedUsers[2] as any);
+      await userRepository.save(regularUser);
+      console.log(
+        `✅ Regular user created: user/resu (${shouldHashPassword ? 'hashed' : 'plain text'})`,
+      );
+    }
+
+    if (!existingManager) {
+      const managerUser = userRepository.create(processedUsers[1] as any);
+      await userRepository.save(managerUser);
+      console.log(
+        `✅ Manager user created: manager/manager (${shouldHashPassword ? 'hashed' : 'plain text'})`,
+      );
+    } else {
+      console.log('ℹ️ Manager user already exists');
+    }
+
+    if (!existingUser) {
+      const regularUser = userRepository.create(processedUsers[2] as any);
+      await userRepository.save(regularUser);
+      console.log(
+        `✅ User created: user/user (${shouldHashPassword ? 'hashed' : 'plain text'})`,
+      );
+    } else {
+      console.log('ℹ️ User already exists');
     }
 
     console.log('🎉 User seeding completed successfully');

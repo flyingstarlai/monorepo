@@ -12,6 +12,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 
 import { UsersFilterDto } from './dto/users-filter.dto';
 import { ChangePasswordDto } from '../auth/dto/change-password.dto';
+import { RoleService } from './role.service';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -22,7 +23,10 @@ export class UsersService {
     private jwtService: JwtService,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(
+    createUserDto: CreateUserDto,
+    creatorRole?: string,
+  ): Promise<User> {
     try {
       const {
         username,
@@ -30,9 +34,12 @@ export class UsersService {
         fullName,
         deptNo,
         deptName,
-        role = 'regular',
+        role = 'user',
         isActive = true,
       } = createUserDto;
+
+      // Validate role creation permissions
+      this.validateRoleCreation(role, creatorRole);
 
       console.log('Creating user with data:', {
         username,
@@ -43,17 +50,23 @@ export class UsersService {
         isActive,
       });
 
-      // Always hash passwords for security
-      const finalPassword = await bcrypt.hash(password, 10);
-      console.log('Generated hash:', finalPassword);
-      console.log(
-        'Hash test - immediate compare:',
-        bcrypt.compareSync(password, finalPassword),
-      );
+      // Check if password should be hashed based on FEATURE_HASHED setting
+      const shouldHashPassword = process.env.FEATURE_HASHED === 'true';
+      const finalPassword = shouldHashPassword
+        ? await bcrypt.hash(password, 10)
+        : password;
 
-      console.log('Hash to be saved:', finalPassword);
-      console.log('Hash type:', typeof finalPassword);
-      console.log('Hash length:', finalPassword.length);
+      if (shouldHashPassword) {
+        console.log('Generated hash:', finalPassword);
+        console.log(
+          'Hash test - immediate compare:',
+          bcrypt.compareSync(password, finalPassword),
+        );
+        console.log('Hash type:', typeof finalPassword);
+        console.log('Hash length:', finalPassword.length);
+      } else {
+        console.log('Using plain text password');
+      }
 
       const user = this.usersRepository.create({
         id: this.generateId(),
@@ -86,6 +99,31 @@ export class UsersService {
     } catch (error) {
       console.error('Error creating user:', error);
       throw error;
+    }
+  }
+
+  private validateRoleCreation(
+    roleToCreate: string,
+    creatorRole?: string,
+  ): void {
+    if (!creatorRole) {
+      throw new BadRequestException(
+        'Creator role is required for user creation',
+      );
+    }
+
+    if (
+      !RoleService.canCreateUserWithRole(
+        creatorRole as any,
+        roleToCreate as any,
+      )
+    ) {
+      const availableRoles = RoleService.getAvailableRolesForCreation(
+        creatorRole as any,
+      );
+      throw new BadRequestException(
+        `Cannot create user with role "${roleToCreate}". Available roles: ${availableRoles.join(', ') || 'None'}`,
+      );
     }
   }
 
@@ -171,10 +209,28 @@ export class UsersService {
     return user;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+    creatorRole?: string,
+  ): Promise<User> {
     const existingUser = await this.findOne(id);
     if (!existingUser) {
       throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    // Validate role change permissions if role is being updated
+    if (updateUserDto.role && updateUserDto.role !== existingUser.role) {
+      if (
+        !RoleService.canEditUserRole(
+          creatorRole as any,
+          updateUserDto.role as any,
+        )
+      ) {
+        throw new BadRequestException(
+          'Only administrators can change user roles',
+        );
+      }
     }
 
     await this.usersRepository.update(id, updateUserDto);

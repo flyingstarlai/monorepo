@@ -7,8 +7,8 @@ export class UsersFilterDto {
   search?: string;
 
   @IsOptional()
-  @IsEnum(['admin', 'regular'])
-  role?: 'admin' | 'regular';
+  @IsEnum(['admin', 'manager', 'user'])
+  role?: 'admin' | 'manager' | 'user';
 
   @IsOptional()
   @IsEnum(['true', 'false'])

@@ -32,7 +32,7 @@ export class DashboardService {
       .where("user.deptName IS NOT NULL AND user.deptName != ''")
       .getRawOne();
     const totalDepartments = parseInt(
-      departmentsResult['COUNT(DISTINCT user.deptName)'] || '0',
+      (departmentsResult as any)['COUNT(DISTINCT user.deptName)'] || '0',
     );
 
     // Get new users in last 30 days

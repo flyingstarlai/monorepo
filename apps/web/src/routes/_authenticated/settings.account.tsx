@@ -49,7 +49,7 @@ function RouteComponent() {
               </div>
               <Button
                 onClick={() => setShowChangePassword(true)}
-                className="px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-md hover:bg-slate-800 transition-colors"
+                variant="default"
               >
                 Change Password
               </Button>

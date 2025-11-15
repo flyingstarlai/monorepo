@@ -4,7 +4,7 @@ export interface User {
   fullName: string;
   deptNo: string;
   deptName: string;
-  role: 'admin' | 'regular';
+  role: 'admin' | 'manager' | 'user';
   isActive: boolean;
   lastLoginAt?: Date;
   createdAt: Date;

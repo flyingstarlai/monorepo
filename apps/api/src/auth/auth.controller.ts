@@ -12,6 +12,7 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import type { User } from '../users/entities/user.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -31,7 +32,7 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Request() req) {
+  async login(@Request() req: { user: User }) {
     try {
       // The LocalAuthGuard validates credentials and attaches user to req.user
       const user = req.user;
@@ -53,7 +54,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('refresh')
-  async refreshToken(@Request() req) {
+  async refreshToken(@Request() req: { body: { refreshToken: string } }) {
     try {
       const refreshToken = req.body.refreshToken;
       if (!refreshToken) {
@@ -71,14 +72,14 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  async getProfile(@Request() req) {
+  async getProfile(@Request() req: { user: User }) {
     return req.user;
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('change-password')
   async changePassword(
-    @Request() req,
+    @Request() req: { user: User },
     @Body()
     changePasswordDto: {
       currentPassword: string;

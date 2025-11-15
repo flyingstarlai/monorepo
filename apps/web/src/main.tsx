@@ -12,6 +12,7 @@ import { queryClient } from './lib/query-client';
 import { Toaster } from './components/ui/sonner';
 import { useAuthStore } from './features/auth/store';
 import type { RouterContext as AuthRouterContext } from './routes/__root';
+import { RoleService } from './lib/role.service';
 
 // Register router instance for type safety
 declare module '@tanstack/react-router' {
@@ -26,6 +27,17 @@ const initialAuth = useAuthStore.getState();
 // Kick off a single auth initialization and expose promise to context
 const authInit = useAuthStore.getState().initializeAuth();
 
+// Role helper functions
+const createAuthHelpers = (user: typeof initialAuth.user) => ({
+  hasRole: (role: 'admin' | 'manager' | 'user') =>
+    RoleService.hasRole(user?.role, role),
+  hasAnyRole: (roles: ('admin' | 'manager' | 'user')[]) =>
+    RoleService.hasAnyRole(user?.role, roles),
+  hasMinimumRole: (minimumRole: 'admin' | 'manager' | 'user') =>
+    RoleService.hasMinimumRole(user?.role, minimumRole),
+  getPermissions: () => RoleService.getPermissions(user?.role),
+});
+
 // Create router instance
 const router = createRouter({
   routeTree,
@@ -36,6 +48,7 @@ const router = createRouter({
       isAuthenticated: initialAuth.isAuthenticated,
       isLoading: initialAuth.isLoading,
       isAuthenticating: initialAuth.isAuthenticating,
+      ...createAuthHelpers(initialAuth.user),
     },
     authInit,
   },
@@ -52,6 +65,7 @@ useAuthStore.subscribe((state) => {
         isAuthenticated: state.isAuthenticated,
         isLoading: state.isLoading,
         isAuthenticating: state.isAuthenticating,
+        ...createAuthHelpers(state.user),
       },
     },
   });
